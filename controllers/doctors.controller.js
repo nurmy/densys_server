@@ -4,7 +4,7 @@ import {
     generateUsername,
     generatePassword,
 } from './../utils/userAttributes.js'
-import { registerUser, modifyUser } from './users.controller.js'
+import { registerUser, fetchUser, modifyUser } from './users.controller.js'
 
 export const registerDoctor = async (req, res) => {
     try {
@@ -13,8 +13,8 @@ export const registerDoctor = async (req, res) => {
                 username:
                     req.body.username ||
                     (await generateUsername({
-                        first_name: req.body.firstName,
-                        last_name: req.body.lastName,
+                        first_name: req.body.first_name,
+                        last_name: req.body.last_name,
                     })),
                 password: req.body.password || generatePassword(),
                 role: 'doctor',
@@ -22,25 +22,30 @@ export const registerDoctor = async (req, res) => {
             const user_details = await registerUser(attributes)
             const doc = new DoctorModel({
                 user_id: user_details._id,
-                date_of_birth: req.body.birthDate || undefined,
+                department_id: req.body.department_id,
+                spec_id: req.body.spec_id,
+                date_of_birth: req.body.date_of_birth,
                 iin: req.body.iin,
-                national_id_number: req.body.nationalIdNumber,
-                first_name: req.body.firstName,
-                last_name: req.body.lastName,
-                middle_name: req.body.middleName,
-                contact_number: req.body.contactNumber,
+                national_id_number: req.body.national_id_number,
+                first_name: req.body.first_name,
+                last_name: req.body.last_name,
+                middle_name: req.body.middle_name,
+                contact_number: req.body.contact_number,
                 experience: req.body.experience,
-                photo_url: req.body.photoUrl,
+                photo_url: req.body.photo_url,
                 category: req.body.category,
-                appointment_price: req.body.appointmentPrice,
+                schedule: req.body.schedule,
+                appointment_price: req.body.appointment_price,
                 degree: req.body.degree,
                 rating: req.body.rating,
                 address: req.body.address,
-                homepage_url: req.body.homepageUrl || undefined,
+                homepage_url: req.body.homepage_url || undefined,
             })
             const doctor = await doc.save()
+            const user = await fetchUser({ user_id: doctor.user_id })
             res.json({
                 ...doctor._doc,
+                user_id: user,
             })
         } else {
             res.status(403).json({
@@ -58,6 +63,8 @@ export const fetchAllDoctors = async (req, res) => {
     try {
         if (req.body.role === 'admin') {
             const doctors = await DoctorModel.find({})
+                .populate('user_id')
+                .exec()
             res.json(doctors)
         } else {
             res.status(403).json({
@@ -108,29 +115,34 @@ export const modifyDoctor = async (req, res) => {
                 user_id: req.params.id,
             })
 
-            doctor.date_of_birth = req.body.birthDate || doctor.date_of_birth
+            doctor.date_of_birth =
+                req.body.date_of_birth || doctor.date_of_birth
             doctor.iin = req.body.iin || doctor.iin
+            doctor.department_id =
+                req.body.department_id || doctor.department_id
+            doctor.spec_id = req.body.spec_id || doctor.spec_id
+            doctor.schedule = req.body.schedule || doctor.schedule
             doctor.national_id_number =
-                req.body.nationalIdNumber || doctor.national_id_number
-            doctor.first_name = req.body.firstName || doctor.first_name
-            doctor.last_name = req.body.lastName || doctor.last_name
-            doctor.middle_name = req.body.middleName || doctor.middle_name
+                req.body.national_id_number || doctor.national_id_number
+            doctor.first_name = req.body.first_name || doctor.first_name
+            doctor.last_name = req.body.last_name || doctor.last_name
+            doctor.middle_name = req.body.middle_name || doctor.middle_name
             doctor.contact_number =
-                req.body.contactNumber || doctor.contact_number
+                req.body.contact_number || doctor.contact_number
             doctor.experience = req.body.experience || doctor.experience
-            doctor.photo_url = req.body.photoUrl || doctor.photo_url
+            doctor.photo_url = req.body.photo_url || doctor.photo_url
             doctor.category = req.body.category || doctor.category
             doctor.appointment_price =
-                req.body.appointmentPrice || doctor.appointment_price
+                req.body.appointment_price || doctor.appointment_price
             doctor.degree = req.body.degree || doctor.degree
             doctor.rating = req.body.rating || doctor.rating
             doctor.address = req.body.address || doctor.address
-            doctor.homepage_url = req.body.homepageUrl || doctor.homepage_url
+            doctor.homepage_url = req.body.homepage_url || doctor.homepage_url
 
             await doctor.save()
-
             res.json({
                 ...doctor._doc,
+                user_id: user,
             })
         } else {
             res.status(403).json({

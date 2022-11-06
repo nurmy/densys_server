@@ -17,7 +17,7 @@ const authenticate = (req, res, next) => {
         }
     } else {
         res.status(403).json({
-            message: 'Access denied',
+            message: 'Insufficient info',
         })
     }
 }

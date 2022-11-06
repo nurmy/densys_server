@@ -5,21 +5,26 @@ const DoctorSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
+    department_id: {
+        type: String,
+        required: 'Department ID is required',
+    },
+    spec_id: {
+        type: String,
+        required: 'Spec ID is required',
+    },
     date_of_birth: {
         type: Date,
-        // required: 'Date of birth is required',
-        default: Date.now,
+        required: 'Date of birth is required',
     },
     iin: {
         type: String,
         required: 'IIN is required',
-        unique: 'IIN must be unique',
         trim: true,
     },
     national_id_number: {
         type: String,
         required: 'National ID number is required',
-        unique: 'National ID number must be unique',
         trim: true,
     },
     first_name: {
@@ -60,20 +65,10 @@ const DoctorSchema = new mongoose.Schema({
         type: Number,
         required: 'Price per appointment is required',
     },
-    // schedule: {
-    //     type: [
-    //         {
-    //             day: {
-    //                 type: String,
-    //                 trim: true,
-    //             },
-    //             hours: {
-    //                 start: Date,
-    //                 end: Date,
-    //             },
-    //         },
-    //     ],
-    // },
+    schedule: {
+        type: String,
+        required: 'Schedule is required',
+    },
     degree: {
         type: String,
         required: 'Degree level is required',

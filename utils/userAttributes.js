@@ -2,8 +2,8 @@ import UserModel from './../models/user.model.js'
 import { v4 } from 'uuid'
 
 export const generateUsername = async ({ first_name, last_name }) => {
-    let username = `${first_name}.${last_name}`
-    const user = await UserModel.findOne({
+    let username = `${first_name}.${last_name}`.toLowerCase()
+    let user = await UserModel.findOne({
         username: username,
     })
     while (user) {

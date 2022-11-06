@@ -7,19 +7,16 @@ const PatientSchema = new mongoose.Schema({
     },
     date_of_birth: {
         type: Date,
-        default: Date.now,
-        // required: 'Date of birth is required',
+        required: 'Date of birth is required',
     },
     iin: {
         type: String,
         required: 'IIN is required',
-        unique: 'IIN must be unique',
         trim: true,
     },
     national_id_number: {
         type: String,
         required: 'National ID number is required',
-        unique: 'National ID number must be unique',
         trim: true,
     },
     first_name: {
@@ -55,7 +52,6 @@ const PatientSchema = new mongoose.Schema({
     email: {
         type: String,
         trim: true,
-        unique: 'Email already exists',
         match: [/.+\@.+\..+/, 'Please fill a valid email address'],
         default: 'noemail@err.err',
     },
