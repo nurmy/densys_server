@@ -1,4 +1,5 @@
 import DoctorModel from './../models/doctor.model.js'
+import mongoose from 'mongoose'
 
 import {
     generateUsername,
@@ -23,7 +24,7 @@ export const registerDoctor = async (req, res) => {
             const doc = new DoctorModel({
                 user_id: user_details._id,
                 department_id: req.body.department_id,
-                spec_id: req.body.spec_id,
+                spec_id: new mongoose.Types.ObjectId(req.body.spec_id),
                 date_of_birth: req.body.date_of_birth,
                 iin: req.body.iin,
                 national_id_number: req.body.national_id_number,
@@ -61,11 +62,75 @@ export const registerDoctor = async (req, res) => {
 
 export const fetchAllDoctors = async (req, res) => {
     try {
-        if (req.body.role === 'admin') {
-            const doctors = await DoctorModel.find({})
-                .populate('user_id')
-                .exec()
+        const options = {}
+        if (req.params.spec_id) options.spec_id = req.params.spec_id
+        if (req.query.search) {
+            options['first_name'] = {
+                $regex: `${req.query.search}`,
+                $options: 'i',
+            }
+            options['second_name'] = {
+                $regex: `${req.query.search}`,
+                $options: 'i',
+            }
+        }
+        if (req.body.role === 'admin' || req.body.role === 'patient') {
+            let doctors
+            if (req.query.page) {
+                doctors = await DoctorModel.find(options)
+                    .sort([
+                        ['first_name', 1],
+                        ['last_name', 1],
+                    ])
+                    .skip((req.query.page - 1) * req.query.limit)
+                    .limit(req.query.limit)
+                    .populate('user_id')
+                    .exec()
+            } else {
+                doctors = await DoctorModel.find(options)
+                    .populate('user_id')
+                    .exec()
+            }
             res.json(doctors)
+        } else {
+            res.status(403).json({
+                message: 'Access denied',
+            })
+        }
+    } catch (err) {
+        res.status(500).json({
+            message: 'Failed to fetch doctors info',
+        })
+    }
+}
+
+export const countDoctors = async (req, res) => {
+    try {
+        const options = {}
+        if (req.params.spec_id) options.spec_id = req.params.spec_id
+        if (req.query.search) {
+            options['first_name'] = {
+                $regex: `${req.query.search}`,
+                $options: 'i',
+            }
+            options['second_name'] = {
+                $regex: `${req.query.search}`,
+                $options: 'i',
+            }
+        }
+        if (req.body.role === 'admin' || req.body.role === 'patient') {
+            let count
+            if (req.query.page) {
+                count = await DoctorModel.find(options)
+                    .sort([
+                        ['first_name', 1],
+                        ['last_name', 1],
+                    ])
+                    .countDocuments()
+            } else {
+                count = await DoctorModel.find(options).countDocuments()
+            }
+            res.json(count)
         } else {
             res.status(403).json({
                 message: 'Access denied',

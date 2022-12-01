@@ -10,7 +10,8 @@ const DoctorSchema = new mongoose.Schema({
         required: 'Department ID is required',
     },
     spec_id: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Specialization',
         required: 'Spec ID is required',
     },
     date_of_birth: {

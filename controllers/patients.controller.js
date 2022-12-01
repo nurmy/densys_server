@@ -19,6 +19,7 @@ export const registerPatient = async (req, res) => {
                 password: req.body.password || generatePassword(),
                 role: 'patient',
             }
+            console.log(attributes.password)
             const user_details = await registerUser(attributes)
             const doc = new PatientModel({
                 user_id: user_details._id,
